@@ -10,9 +10,7 @@ public abstract class Entity {
         this.ICON = ICON;
     }
 
-    public void attack (Entity other) {
-
-    }
+    public abstract void attack (Entity other);
 
     public void takeDamage(int damage) {
         this.health -= damage;
