@@ -20,6 +20,32 @@ public class Tile {
         return Optional.ofNullable(entity);
     }
 
+    public void setEntity(Entity entity) {
+        this.entity = entity;
+    }
+
+    /**
+     * Attempt to move an <code>Entity</code> onto this tile. Causes that entity to attack this <code>Tile</code>'s
+     * <code>Entity</code> if it is present.
+     * @param moving The <code>Entity</code> that tries to move onto this tile.
+     * @return True if the move is successful, false otherwise.
+     */
+    public boolean receiveEntity(Entity moving) {
+        if (this.entity != null) {
+            moving.attack(this.entity);
+            if (this.entity.getHealth() < 0) {
+                this.entity.die(this, moving);
+            }
+            return false;
+        }
+        if (this.terrain == Terrain.WALL) {
+            GamePanel.addMessage("There's a wall there!");
+            return false;
+        }
+        this.entity = moving;
+        return true;
+    }
+
     /**
      * Used to determine the visual for this tile, as displayed on the screen.
      * @return The char representing the visual appearance of this tile.
@@ -47,5 +73,9 @@ public class Tile {
 
     public boolean isSeen() {
         return seen;
+    }
+
+    public void setSeen(boolean seen) {
+        this.seen = seen;
     }
 }
