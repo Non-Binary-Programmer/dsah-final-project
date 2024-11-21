@@ -2,9 +2,14 @@ package src;
 
 public abstract class Entity {
     public final char ICON;
+    private final GameManager game;
 
     public int getHealth() {
         return health;
+    }
+
+    public GameManager getGame() {
+        return game;
     }
 
     public void setHealth(int health) {
@@ -50,20 +55,25 @@ public abstract class Entity {
     private int row;
     private int col;
 
-    public Entity (char ICON) {
+    public Entity (char ICON, GameManager game) {
         this.ICON = ICON;
+        this.game = game;
     }
 
-    public Entity (char ICON, int row, int col) {
+    public Entity (char ICON, int row, int col, GameManager game) {
         this.ICON = ICON;
         this.row = row;
         this.col = col;
+        this.game = game;
     }
 
     public abstract void attack (Entity other);
 
-    public void takeDamage(int damage) {
+    public void takeDamage(int damage, Entity source) {
         this.health -= damage;
+        if (this.health < 0) {
+            die(game.tileAt(row, col), source);
+        }
     }
 
     public abstract void die(Tile location, Entity killer);

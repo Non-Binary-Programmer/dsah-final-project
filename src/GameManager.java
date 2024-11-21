@@ -19,16 +19,16 @@ public class GameManager implements KeyListener {
         for (int row = 0; row < HEIGHT; row++) {
             for (int col = 0; col < WIDTH; col++) {
                 if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1){
-                    map[row][col] = new Tile(Terrain.WALL);
+                    map[row][col] = new Tile(Terrain.WALL, row, col);
                 } else {
-                    map[row][col] = new Tile(Terrain.EMPTY);
+                    map[row][col] = new Tile(Terrain.EMPTY, row, col);
                     if (Math.random() < 0.01) {
-                        map[row][col].setEntity(new GiantRat());
+                        map[row][col].setEntity(new GiantRat(this));
                     }
                 }
                 map[row][col].setSeen(true);
                 if (row == HEIGHT / 2 && col == WIDTH / 2) {
-                    this.player = new Player(row, col);
+                    this.player = new Player(row, col, this);
                     map[row][col].setEntity(player);
                     focusCol = col;
                     focusRow = row;
@@ -39,71 +39,47 @@ public class GameManager implements KeyListener {
         gamePanel.updateDisplay(map, HEIGHT / 2, WIDTH / 2);
     }
 
+    public Tile tileAt(int row, int col) {
+        return map[row][col];
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
         boolean actionPerformed = false;
         switch (e.getKeyChar()) {
             case '1' -> {
-                if (map[player.getRow() + 1][player.getCol() - 1].receiveEntity(player)) {
-                    player.setRow(player.getRow() + 1);
-                    player.setCol(player.getCol() - 1);
-                    map[player.getRow() - 1][player.getCol() + 1].setEntity(null);
-                }
+                map[player.getRow() + 1][player.getCol() - 1].receiveEntity(player);
                 actionPerformed = true;
             }
             case '2' -> {
-                if (map[player.getRow() + 1][player.getCol()].receiveEntity(player)) {
-                    player.setRow(player.getRow() + 1);
-                    map[player.getRow() - 1][player.getCol()].setEntity(null);
-                }
+                map[player.getRow() + 1][player.getCol()].receiveEntity(player);
                 actionPerformed = true;
             }
             case '3' -> {
-                if (map[player.getRow() + 1][player.getCol() + 1].receiveEntity(player)) {
-                    player.setRow(player.getRow() + 1);
-                    player.setCol(player.getCol() + 1);
-                    map[player.getRow() - 1][player.getCol() - 1].setEntity(null);
-                }
+                map[player.getRow() + 1][player.getCol() + 1].receiveEntity(player);
                 actionPerformed = true;
             }
             case '4' -> {
-                if (map[player.getRow()][player.getCol() - 1].receiveEntity(player)) {
-                    player.setCol(player.getCol() - 1);
-                    map[player.getRow()][player.getCol() + 1].setEntity(null);
-                }
+                map[player.getRow()][player.getCol() - 1].receiveEntity(player);
                 actionPerformed = true;
             }
             case '5' -> {
                 actionPerformed = true;
             }
             case '6' -> {
-                if (map[player.getRow()][player.getCol() + 1].receiveEntity(player)) {
-                    player.setCol(player.getCol() + 1);
-                    map[player.getRow()][player.getCol() - 1].setEntity(null);
-                }
+                map[player.getRow()][player.getCol() + 1].receiveEntity(player);
                 actionPerformed = true;
             }
             case '7' -> {
-                if (map[player.getRow() - 1][player.getCol() - 1].receiveEntity(player)) {
-                    player.setRow(player.getRow() - 1);
-                    player.setCol(player.getCol() - 1);
-                    map[player.getRow() + 1][player.getCol() + 1].setEntity(null);
-                }
+                map[player.getRow() - 1][player.getCol() - 1].receiveEntity(player);
                 actionPerformed = true;
             }
             case '8' -> {
-                if (map[player.getRow() - 1][player.getCol()].receiveEntity(player)) {
-                    player.setRow(player.getRow() - 1);
-                    map[player.getRow() + 1][player.getCol()].setEntity(null);
-                }
+                map[player.getRow() - 1][player.getCol()].receiveEntity(player);
                 actionPerformed = true;
             }
             case '9' -> {
-                if (map[player.getRow() - 1][player.getCol() + 1].receiveEntity(player)) {
-                    player.setRow(player.getRow() - 1);
-                    player.setCol(player.getCol() + 1);
-                    map[player.getRow() + 1][player.getCol() - 1].setEntity(null);
-                }
+                map[player.getRow() - 1][player.getCol() + 1].receiveEntity(player);
                 actionPerformed = true;
             }
             default -> {
@@ -121,31 +97,19 @@ public class GameManager implements KeyListener {
     public void keyPressed(KeyEvent e) {
         boolean actionPerformed = false;
         if (e.getKeyCode() == 38) { // up arrow
-            if (map[player.getRow() - 1][player.getCol()].receiveEntity(player)) {
-                player.setRow(player.getRow() - 1);
-                map[player.getRow() + 1][player.getCol()].setEntity(null);
-            }
+            map[player.getRow() - 1][player.getCol()].receiveEntity(player);
             actionPerformed = true;
         }
         if (e.getKeyCode() == 37) { // left arrow
-            if (map[player.getRow()][player.getCol() - 1].receiveEntity(player)) {
-                player.setCol(player.getCol() - 1);
-                map[player.getRow()][player.getCol() + 1].setEntity(null);
-            }
+            map[player.getRow()][player.getCol() - 1].receiveEntity(player);
             actionPerformed = true;
         }
         if (e.getKeyCode() == 40) { // down arrow
-            if (map[player.getRow() + 1][player.getCol()].receiveEntity(player)) {
-                player.setRow(player.getRow() + 1);
-                map[player.getRow() - 1][player.getCol()].setEntity(null);
-            }
+            map[player.getRow() + 1][player.getCol()].receiveEntity(player);
             actionPerformed = true;
         }
         if (e.getKeyCode() == 39) { // right arrow
-            if (map[player.getRow()][player.getCol() + 1].receiveEntity(player)) {
-                player.setCol(player.getCol() + 1);
-                map[player.getRow()][player.getCol() - 1].setEntity(null);
-            }
+            map[player.getRow()][player.getCol() + 1].receiveEntity(player);
             actionPerformed = true;
         }
         if (actionPerformed) {

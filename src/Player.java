@@ -5,8 +5,8 @@ public class Player extends Entity {
     private int level;
     private double toNextLevel;
 
-    public Player () {
-        super('@');
+    public Player (GameManager game) {
+        super('@', game);
         setArmor(0);
         setHealth(10);
         setMaxHealth(10);
@@ -15,8 +15,8 @@ public class Player extends Entity {
         this.toNextLevel = 10;
     }
 
-    public Player(int row, int col) {
-        super('@', row, col);
+    public Player(int row, int col, GameManager game) {
+        super('@', row, col, game);
         setArmor(0);
         setHealth(10);
         setMaxHealth(10);
@@ -29,7 +29,7 @@ public class Player extends Entity {
     public void attack(Entity other) {
         if (other instanceof Enemy enemy){
             if (Math.random() * (19 + level) > (other.getArmor() + 20) * Math.random()) {
-                other.takeDamage((int) (Math.random() * 4) + 1);
+                other.takeDamage((int) (Math.random() * 4) + 1, this);
                 GamePanel.addMessage("You hit " + enemy + '.');
             } else {
                 GamePanel.addMessage("You miss " + enemy + '.');

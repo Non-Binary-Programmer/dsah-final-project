@@ -8,9 +8,13 @@ public class Tile {
     private Entity entity;
     private Terrain terrain;
     private boolean seen;
+    private final int row;
+    private final int col;
 
-    public Tile (Terrain terrain) {
+    public Tile (Terrain terrain, int row, int col) {
         this.terrain = terrain;
+        this.row = row;
+        this.col = col;
         money = 0;
         seen = false;
         entity = null;
@@ -33,9 +37,6 @@ public class Tile {
     public boolean receiveEntity(Entity moving) {
         if (this.entity != null) {
             moving.attack(this.entity);
-            if (this.entity.getHealth() < 0) {
-                this.entity.die(this, moving);
-            }
             return false;
         }
         if (this.terrain == Terrain.WALL) {
@@ -43,6 +44,9 @@ public class Tile {
             return false;
         }
         this.entity = moving;
+        entity.getGame().tileAt(entity.getRow(), entity.getCol()).setEntity(null);
+        entity.setRow(this.row);
+        entity.setCol(this.col);
         return true;
     }
 

@@ -8,8 +8,8 @@ public abstract class Enemy extends Entity {
     private int armor;
     private int maxHealth;
 
-    public Enemy(char ICON, String name, int armor, int maxHealth, double experience, int cr) {
-        super(ICON);
+    public Enemy(char ICON, GameManager game, String name, int armor, int maxHealth, double experience, int cr) {
+        super(ICON, game);
         this.armor = armor;
         this.setHealth(maxHealth);
         this.maxHealth = maxHealth;
