@@ -65,6 +65,8 @@ public abstract class Entity {
         this.row = row;
         this.col = col;
         this.game = game;
+        System.out.println(row);
+        System.out.println(col);
     }
 
     public abstract void attack (Entity other);

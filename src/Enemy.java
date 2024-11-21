@@ -8,8 +8,9 @@ public abstract class Enemy extends Entity {
     private int armor;
     private int maxHealth;
 
-    public Enemy(char ICON, GameManager game, String name, int armor, int maxHealth, double experience, int cr) {
-        super(ICON, game);
+    public Enemy(char ICON, GameManager game, int row, int col, String name, int armor, int maxHealth, double experience,
+                 int cr) {
+        super(ICON, row, col, game);
         this.armor = armor;
         this.setHealth(maxHealth);
         this.maxHealth = maxHealth;
@@ -21,6 +22,10 @@ public abstract class Enemy extends Entity {
     @Override
     public void die(Tile location, Entity killer) {
         GamePanel.addMessage("The " + name + " dies.");
+        System.out.println(getRow());
+        System.out.println(getCol());
+        System.out.println(location.getRow());
+        System.out.println(location.getCol());
         if (killer instanceof Player player) {
             player.receiveExperience(BASE_EXPERIENCE * ((double) player.getLevel() / CHALLENGE_RATING));
         }

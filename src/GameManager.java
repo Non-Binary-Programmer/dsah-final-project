@@ -23,7 +23,7 @@ public class GameManager implements KeyListener {
                 } else {
                     map[row][col] = new Tile(Terrain.EMPTY, row, col);
                     if (Math.random() < 0.01) {
-                        map[row][col].setEntity(new GiantRat(this));
+                        map[row][col].setEntity(new GiantRat(this, row, col));
                     }
                 }
                 map[row][col].setSeen(true);

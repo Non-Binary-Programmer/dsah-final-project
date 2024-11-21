@@ -75,6 +75,14 @@ public class Tile {
         throw new RuntimeException("This tile's terrain doesn't have an associated display character!");
     }
 
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
     public boolean isSeen() {
         return seen;
     }

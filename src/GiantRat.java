@@ -4,8 +4,8 @@ public class GiantRat extends Enemy {
     public static final int CHALLENGE_RATING = 1;
     public static final int BASE_EXPERIENCE = 2;
 
-    public GiantRat(GameManager game) {
-        super('R', game, "giant rat", 2, 4, 2, 1);
+    public GiantRat(GameManager game, int row, int col) {
+        super('R', game, row, col, "giant rat", 2, 4, 2, 1);
     }
 
     @Override
