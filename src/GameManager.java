@@ -1,5 +1,7 @@
 package src;
 
+import src.enemies.GiantRat;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -47,6 +49,9 @@ public class GameManager implements KeyListener {
     public void keyTyped(KeyEvent e) {
         boolean actionPerformed = false;
         switch (e.getKeyChar()) {
+            case 'q' -> {
+
+            }
             case '1' -> {
                 map[player.getRow() + 1][player.getCol() - 1].receiveEntity(player);
                 actionPerformed = true;

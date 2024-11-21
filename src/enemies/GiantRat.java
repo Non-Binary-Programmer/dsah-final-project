@@ -1,4 +1,9 @@
-package src;
+package src.enemies;
+
+import src.Enemy;
+import src.Entity;
+import src.GameManager;
+import src.Player;
 
 public class GiantRat extends Enemy {
     public static final int CHALLENGE_RATING = 1;

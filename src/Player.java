@@ -1,19 +1,12 @@
 package src;
 
+import java.util.ArrayList;
+
 public class Player extends Entity {
     private double experience;
     private int level;
     private double toNextLevel;
-
-    public Player (GameManager game) {
-        super('@', game);
-        setArmor(0);
-        setHealth(10);
-        setMaxHealth(10);
-        this.experience = 0;
-        this.level = 1;
-        this.toNextLevel = 10;
-    }
+    private ArrayList<Item> items;
 
     public Player(int row, int col, GameManager game) {
         super('@', row, col, game);
@@ -23,6 +16,8 @@ public class Player extends Entity {
         this.experience = 0;
         this.level = 1;
         this.toNextLevel = 10;
+
+        items = new ArrayList<>();
     }
 
     @Override

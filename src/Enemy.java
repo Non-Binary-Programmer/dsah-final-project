@@ -3,7 +3,6 @@ package src;
 public abstract class Enemy extends Entity {
     public final double BASE_EXPERIENCE;
     public final int CHALLENGE_RATING;
-
     private String name;
     private int armor;
     private int maxHealth;
@@ -35,5 +34,13 @@ public abstract class Enemy extends Entity {
     @Override
     public String toString() {
         return "the " + name;
+    }
+
+    public String toString(boolean capitalized) {
+        if (capitalized) {
+            return "The " + name;
+        } else {
+            return this.toString();
+        }
     }
 }

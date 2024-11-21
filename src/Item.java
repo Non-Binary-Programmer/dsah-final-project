@@ -1,14 +1,20 @@
 package src;
 
 public abstract class Item implements Comparable<Item> {
-    abstract String getName();
-    abstract char getIcon();
-    abstract int getPriority();
+    public final char ICON;
+    public final int PRIORITY; // Lower = more priority
+
+    public Item(char ICON, int PRIORITY) {
+        this.ICON = ICON;
+        this.PRIORITY = PRIORITY;
+    }
+
+    public abstract String getName();
 
     @Override
     public int compareTo(Item o) {
-        if (getPriority() != o.getPriority()) {
-            return getPriority() - o.getPriority();
+        if (PRIORITY != o.PRIORITY) {
+            return o.PRIORITY - PRIORITY;
         }
         return getName().compareTo(o.getName());
     }
