@@ -29,8 +29,8 @@ public class Player extends Entity {
     public void attack(Entity other) {
         if (other instanceof Enemy enemy){
             if (Math.random() * (19 + level) > (other.getArmor() + 20) * Math.random()) {
-                other.takeDamage((int) (Math.random() * 4) + 1, this);
                 GamePanel.addMessage("You hit " + enemy + '.');
+                other.takeDamage((int) (Math.random() * 4) + 1, this);
             } else {
                 GamePanel.addMessage("You miss " + enemy + '.');
             }
