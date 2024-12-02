@@ -94,6 +94,7 @@ public class GameManager implements KeyListener {
             }
         }
         if (actionPerformed) {
+            player.eachTurn();
             this.panel.updateDisplay(map, focusRow, focusCol);
         }
     }
@@ -118,6 +119,7 @@ public class GameManager implements KeyListener {
             actionPerformed = true;
         }
         if (actionPerformed) {
+            player.eachTurn();
             this.panel.updateDisplay(map, focusRow, focusCol);
         }
     }

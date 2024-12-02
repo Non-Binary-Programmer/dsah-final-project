@@ -1,8 +1,11 @@
 package src;
 
+import java.util.HashSet;
+
 public abstract class Entity {
     public final char ICON;
     private final GameManager game;
+    private HashSet<Status> statuses = new HashSet<>();
 
     public int getHealth() {
         return health;
@@ -65,8 +68,6 @@ public abstract class Entity {
         this.row = row;
         this.col = col;
         this.game = game;
-        System.out.println(row);
-        System.out.println(col);
     }
 
     public abstract void attack (Entity other);
@@ -79,4 +80,18 @@ public abstract class Entity {
     }
 
     public abstract void die(Tile location, Entity killer);
+
+    public void applyStatus(Status s) {
+        s.onApply(this);
+        this.statuses.add(s);
+    }
+
+    public void removeStatus(Status s) {
+        s.onEnd(this);
+        this.statuses.remove(s);
+    }
+
+    public void eachTurn() {
+        statuses.forEach(s -> s.eachTurn(this));
+    }
 }

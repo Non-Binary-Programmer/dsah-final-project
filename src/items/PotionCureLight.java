@@ -4,8 +4,8 @@ import src.*;
 import src.iteminterfaces.Quaffable;
 import src.iteminterfaces.Throwable;
 
-public class CureLightPotion extends Item implements Quaffable, Throwable {
-    public CureLightPotion() {
+public class PotionCureLight extends Item implements Quaffable, Throwable {
+    public PotionCureLight() {
         super('?', 0);
     }
 
