@@ -6,10 +6,14 @@ import src.Player;
 import src.iteminterfaces.Ammo;
 import src.iteminterfaces.Quaffable;
 import src.iteminterfaces.Throwable;
+import src.statuses.Poison;
 
 public class PotionPoison extends Item implements Quaffable, Throwable, Ammo {
-    public PotionPoison () {
+    private int severity;
+
+    public PotionPoison (int severity) {
         super('?', 0);
+        this.severity = severity;
     }
 
     @Override
@@ -29,12 +33,13 @@ public class PotionPoison extends Item implements Quaffable, Throwable, Ammo {
 
     @Override
     public boolean hit(Entity source, Entity target) {
-        return false;
+        target.applyStatus(new Poison(severity / 2));
+        return true;
     }
 
     @Override
     public void quaff(Player player) {
-
+        player.applyStatus(new Poison(severity));
     }
 
     @Override
