@@ -5,13 +5,22 @@ import src.iteminterfaces.Quaffable;
 import src.iteminterfaces.Throwable;
 
 public class PotionCureLight extends Item implements Quaffable, Throwable {
-    public PotionCureLight() {
-        super('?', 0);
+    public PotionCureLight(int count) {
+        super('?', 0, 40, count);
     }
 
     @Override
     public String getName() {
         return "Potion of Cure Light Wounds";
+    }
+
+    @Override
+    public String toString() {
+        if (getCount() != 1) {
+            return getCount() + " Potions of Cure Light Wounds";
+        } else {
+            return "A Potion of Cure Light Wounds";
+        }
     }
 
     @Override

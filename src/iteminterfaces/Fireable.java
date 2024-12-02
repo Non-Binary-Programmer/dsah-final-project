@@ -8,8 +8,9 @@ public interface Fireable {
      * @param source The entity shooting from this Fireable.
      * @param target The entity hit by this Fireable.
      * @param ammo The ammunition shot from this Fireable.
+     * @return true if the ammo breaks, false otherwise
      */
-    void attack(Entity source, Entity target, Ammo ammo);
+    boolean attack(Entity source, Entity target, Ammo ammo);
 
     int getRange(Ammo ammo);
 

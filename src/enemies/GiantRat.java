@@ -10,7 +10,7 @@ public class GiantRat extends Enemy {
     public static final int BASE_EXPERIENCE = 2;
 
     public GiantRat(GameManager game, int row, int col) {
-        super('R', game, row, col, "giant rat", 2, 4, 2, 1);
+        super('R', game, row, col, "giant rat", -1, 4, 2, 1);
     }
 
     @Override
@@ -20,5 +20,10 @@ public class GiantRat extends Enemy {
                 other.takeDamage((int) (Math.random() * 2) + 1, this);
             }
         }
+    }
+
+    @Override
+    public int getThrowToHit() {
+        return 1;
     }
 }

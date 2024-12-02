@@ -2,6 +2,9 @@ package src;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 
 public class GamePanel extends JPanel {
     private int charWidth = 200;
@@ -53,6 +56,26 @@ public class GamePanel extends JPanel {
                 }
             }
             newDisplayText.append('\n');
+        }
+
+        display.setText(newDisplayText.toString());
+        message.setText(messageText);
+        messageText = " ";
+    }
+
+    public void displayInventory(List<Item> items) {
+        displayInventory(items, (ignored) -> true);
+    }
+
+    public void displayInventory (List<Item> items, Predicate<Item> condition) {
+        StringBuilder newDisplayText = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            if (condition.test(items.get(i))) {
+                newDisplayText.append((char) ('a' + i));
+                newDisplayText.append(") ");
+                newDisplayText.append(items.get(i).toString());
+                newDisplayText.append('\n');
+            }
         }
 
         display.setText(newDisplayText.toString());

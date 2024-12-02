@@ -1,6 +1,8 @@
 package src;
 
 import src.enemies.GiantRat;
+import src.iteminterfaces.Quaffable;
+import src.items.PotionPoison;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -13,6 +15,12 @@ public class GameManager implements KeyListener {
     private Player player;
     private int focusRow;
     private int focusCol;
+    private State state = State.NORMAL;
+
+    private enum State {
+        NORMAL,
+        QUAFF
+    }
 
     public GameManager(GamePanel gamePanel) {
         this.panel = gamePanel;
@@ -37,7 +45,7 @@ public class GameManager implements KeyListener {
                 }
             }
         }
-
+        player.giveItem(new PotionPoison(5, 2));
         gamePanel.updateDisplay(map, HEIGHT / 2, WIDTH / 2);
     }
 
@@ -48,49 +56,64 @@ public class GameManager implements KeyListener {
     @Override
     public void keyTyped(KeyEvent e) {
         boolean actionPerformed = false;
-        switch (e.getKeyChar()) {
-            case 'q' -> {
-
+        switch (state) {
+            case NORMAL -> {
+                switch (e.getKeyChar()) {
+                    case 'q' -> {
+                        GamePanel.addMessage("Select a potion to quaff.");
+                        panel.displayInventory(player.getItems(), item -> item instanceof Quaffable);
+                        state = State.QUAFF;
+                    }
+                    case '1' -> {
+                        map[player.getRow() + 1][player.getCol() - 1].receiveEntity(player);
+                        actionPerformed = true;
+                    }
+                    case '2' -> {
+                        map[player.getRow() + 1][player.getCol()].receiveEntity(player);
+                        actionPerformed = true;
+                    }
+                    case '3' -> {
+                        map[player.getRow() + 1][player.getCol() + 1].receiveEntity(player);
+                        actionPerformed = true;
+                    }
+                    case '4' -> {
+                        map[player.getRow()][player.getCol() - 1].receiveEntity(player);
+                        actionPerformed = true;
+                    }
+                    case '5' -> {
+                        actionPerformed = true;
+                    }
+                    case '6' -> {
+                        map[player.getRow()][player.getCol() + 1].receiveEntity(player);
+                        actionPerformed = true;
+                    }
+                    case '7' -> {
+                        map[player.getRow() - 1][player.getCol() - 1].receiveEntity(player);
+                        actionPerformed = true;
+                    }
+                    case '8' -> {
+                        map[player.getRow() - 1][player.getCol()].receiveEntity(player);
+                        actionPerformed = true;
+                    }
+                    case '9' -> {
+                        map[player.getRow() - 1][player.getCol() + 1].receiveEntity(player);
+                        actionPerformed = true;
+                    }
+                    default -> {
+                        System.out.println(e.getKeyChar());
+                        GamePanel.addMessage("See README if confused.");
+                        panel.updateDisplay(map, focusRow, focusCol);
+                    }
+                }
             }
-            case '1' -> {
-                map[player.getRow() + 1][player.getCol() - 1].receiveEntity(player);
-                actionPerformed = true;
-            }
-            case '2' -> {
-                map[player.getRow() + 1][player.getCol()].receiveEntity(player);
-                actionPerformed = true;
-            }
-            case '3' -> {
-                map[player.getRow() + 1][player.getCol() + 1].receiveEntity(player);
-                actionPerformed = true;
-            }
-            case '4' -> {
-                map[player.getRow()][player.getCol() - 1].receiveEntity(player);
-                actionPerformed = true;
-            }
-            case '5' -> {
-                actionPerformed = true;
-            }
-            case '6' -> {
-                map[player.getRow()][player.getCol() + 1].receiveEntity(player);
-                actionPerformed = true;
-            }
-            case '7' -> {
-                map[player.getRow() - 1][player.getCol() - 1].receiveEntity(player);
-                actionPerformed = true;
-            }
-            case '8' -> {
-                map[player.getRow() - 1][player.getCol()].receiveEntity(player);
-                actionPerformed = true;
-            }
-            case '9' -> {
-                map[player.getRow() - 1][player.getCol() + 1].receiveEntity(player);
-                actionPerformed = true;
-            }
-            default -> {
-                System.out.println(e.getKeyChar());
-                GamePanel.addMessage("See README if confused.");
-                panel.updateDisplay(map, focusRow, focusCol);
+            case QUAFF -> {
+                if (player.getItems().get((e.getKeyChar() - 'a')) instanceof Quaffable potion) {
+                    potion.quaff(player);
+                    actionPerformed = true;
+                } else {
+                    GamePanel.addMessage("See README if confused.");
+                    panel.updateDisplay(map, focusRow, focusCol);
+                }
             }
         }
         if (actionPerformed) {

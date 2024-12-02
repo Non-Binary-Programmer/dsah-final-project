@@ -43,4 +43,10 @@ public abstract class Enemy extends Entity {
             return this.toString();
         }
     }
+
+    /**
+     * Called by Throwables to determine if the player gets hit after this entity throws something at them.
+     * @return The factor of the attacker's attack roll
+     */
+    public abstract int getThrowToHit();
 }
