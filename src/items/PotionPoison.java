@@ -31,13 +31,13 @@ public class PotionPoison extends Item implements Quaffable, Throwable, Ammo {
 
     @Override
     public boolean hit(Entity source, Entity target) {
-        target.applyStatus(new Poison(severity / 2));
+        target.applyStatus(new Poison(severity / 2, source));
         return true;
     }
 
     @Override
     public void quaff(Player player) {
-        player.applyStatus(new Poison(severity));
+        player.applyStatus(new Poison(severity, player));
     }
 
     @Override

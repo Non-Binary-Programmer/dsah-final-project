@@ -1,11 +1,11 @@
 package src;
 
-import java.util.HashSet;
+import java.util.HashMap;
 
 public abstract class Entity {
     public final char ICON;
     private final GameManager game;
-    private HashSet<Status> statuses = new HashSet<>();
+    private HashMap<String, Status> statuses = new HashMap<>();
 
     public int getHealth() {
         return health;
@@ -74,7 +74,9 @@ public abstract class Entity {
 
     public void takeDamage(int damage, Entity source) {
         this.health -= damage;
-        if (this.health < 0) {
+        System.out.println(damage);
+        System.out.println(health);
+        if (this.health <= 0) {
             die(game.tileAt(row, col), source);
         }
     }
@@ -82,16 +84,24 @@ public abstract class Entity {
     public abstract void die(Tile location, Entity killer);
 
     public void applyStatus(Status s) {
-        s.onApply(this);
-        this.statuses.add(s);
+        if (statuses.containsKey(s.getName())){
+            s.repeatApply(this, statuses.get(s.getName()));
+        } else {
+            s.onApply(this);
+            statuses.put(s.getName(), s);
+        }
     }
 
     public void removeStatus(Status s) {
         s.onEnd(this);
-        this.statuses.remove(s);
+        this.statuses.remove(s.getName());
     }
 
     public void eachTurn() {
-        statuses.forEach(s -> s.eachTurn(this));
+        statuses.forEach((k, v) -> v.eachTurn(this));
+    }
+
+    public HashMap<String, Status> getStatuses() {
+        return statuses;
     }
 }

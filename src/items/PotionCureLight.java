@@ -3,6 +3,7 @@ package src.items;
 import src.*;
 import src.iteminterfaces.Quaffable;
 import src.iteminterfaces.Throwable;
+import src.statuses.Poison;
 
 public class PotionCureLight extends Item implements Quaffable, Throwable {
     public PotionCureLight(int count) {
@@ -27,6 +28,11 @@ public class PotionCureLight extends Item implements Quaffable, Throwable {
     public void quaff(Player player) {
         player.setHealth(Math.min(player.getHealth() + 20, player.getMaxHealth()));
         GamePanel.addMessage("You feel better. You have " + player.getHealth() + " health.");
+        if (player.getStatuses().containsKey(new Poison(0, null).getName())) {
+            Poison poison = (Poison) (player.getStatuses().get(new Poison(0, null).getName()));
+            poison.modifyDuration(-20);
+            GamePanel.addMessage("The poison in your body recedes.");
+        }
     }
 
     @Override

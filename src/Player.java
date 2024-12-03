@@ -48,7 +48,8 @@ public class Player extends Entity {
 
     @Override
     public void die(Tile location, Entity killer) {
-
+        GamePanel.addMessage("You are dead.");
+        getGame().die();
     }
 
     public void receiveExperience(double experience) {
@@ -99,5 +100,11 @@ public class Player extends Entity {
         }
         items.add(item);
         items.sort(Item::compareTo);
+    }
+
+    @Override
+    public void takeDamage(int damage, Entity source) {
+        super.takeDamage(damage, source);
+        GamePanel.addMessage("You have " + getHealth() + " health left.");
     }
 }

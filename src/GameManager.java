@@ -2,6 +2,7 @@ package src;
 
 import src.enemies.GiantRat;
 import src.iteminterfaces.Quaffable;
+import src.items.PotionCureLight;
 import src.items.PotionPoison;
 
 import java.awt.event.KeyEvent;
@@ -19,7 +20,9 @@ public class GameManager implements KeyListener {
 
     private enum State {
         NORMAL,
-        QUAFF
+        QUAFF,
+        INVENTORY,
+        DEAD
     }
 
     public GameManager(GamePanel gamePanel) {
@@ -45,7 +48,8 @@ public class GameManager implements KeyListener {
                 }
             }
         }
-        player.giveItem(new PotionPoison(5, 2));
+        player.giveItem(new PotionPoison(30, 2));
+        player.giveItem(new PotionCureLight(5));
         gamePanel.updateDisplay(map, HEIGHT / 2, WIDTH / 2);
     }
 
@@ -63,6 +67,11 @@ public class GameManager implements KeyListener {
                         GamePanel.addMessage("Select a potion to quaff.");
                         panel.displayInventory(player.getItems(), item -> item instanceof Quaffable);
                         state = State.QUAFF;
+                    }
+                    case 'i' -> {
+                        GamePanel.addMessage("Your inventory:");
+                        panel.displayInventory(player.getItems());
+                        state = State.INVENTORY;
                     }
                     case '1' -> {
                         map[player.getRow() + 1][player.getCol() - 1].receiveEntity(player);
@@ -109,10 +118,17 @@ public class GameManager implements KeyListener {
             case QUAFF -> {
                 if (player.getItems().get((e.getKeyChar() - 'a')) instanceof Quaffable potion) {
                     potion.quaff(player);
+                    Item potions = (Item) potion;
+                    potions.setCount(potions.getCount() - 1);
+                    if (potions.getCount() == 0) {
+                        player.getItems().remove(potions);
+                    }
                     actionPerformed = true;
+                    state = State.NORMAL;
                 } else {
                     GamePanel.addMessage("See README if confused.");
                     panel.updateDisplay(map, focusRow, focusCol);
+                    state = State.NORMAL;
                 }
             }
         }
@@ -125,30 +141,42 @@ public class GameManager implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         boolean actionPerformed = false;
-        if (e.getKeyCode() == 38) { // up arrow
-            map[player.getRow() - 1][player.getCol()].receiveEntity(player);
-            actionPerformed = true;
-        }
-        if (e.getKeyCode() == 37) { // left arrow
-            map[player.getRow()][player.getCol() - 1].receiveEntity(player);
-            actionPerformed = true;
-        }
-        if (e.getKeyCode() == 40) { // down arrow
-            map[player.getRow() + 1][player.getCol()].receiveEntity(player);
-            actionPerformed = true;
-        }
-        if (e.getKeyCode() == 39) { // right arrow
-            map[player.getRow()][player.getCol() + 1].receiveEntity(player);
-            actionPerformed = true;
-        }
-        if (actionPerformed) {
-            player.eachTurn();
-            this.panel.updateDisplay(map, focusRow, focusCol);
+        switch (state) {
+            case NORMAL -> {
+                if (e.getKeyCode() == 38) { // up arrow
+                    map[player.getRow() - 1][player.getCol()].receiveEntity(player);
+                    actionPerformed = true;
+                }
+                if (e.getKeyCode() == 37) { // left arrow
+                    map[player.getRow()][player.getCol() - 1].receiveEntity(player);
+                    actionPerformed = true;
+                }
+                if (e.getKeyCode() == 40) { // down arrow
+                    map[player.getRow() + 1][player.getCol()].receiveEntity(player);
+                    actionPerformed = true;
+                }
+                if (e.getKeyCode() == 39) { // right arrow
+                    map[player.getRow()][player.getCol() + 1].receiveEntity(player);
+                    actionPerformed = true;
+                }
+                if (actionPerformed) {
+                    player.eachTurn();
+                    this.panel.updateDisplay(map, focusRow, focusCol);
+                }
+            }
+            case INVENTORY -> {
+                panel.updateDisplay(map, focusRow, focusCol);
+                state = State.NORMAL;
+            }
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
 
+    }
+
+    public void die() {
+        state = State.DEAD;
     }
 }

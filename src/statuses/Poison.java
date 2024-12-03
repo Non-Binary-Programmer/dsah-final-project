@@ -1,15 +1,14 @@
 package src.statuses;
 
-import src.Entity;
-import src.GamePanel;
-import src.Player;
-import src.Status;
+import src.*;
 
 public class Poison implements Status {
     private int remaining;
+    private Entity source;
 
-    public Poison (int severity) {
+    public Poison (int severity, Entity source) {
         this.remaining = severity;
+        this.source = source;
     }
 
     @Override
@@ -30,7 +29,12 @@ public class Poison implements Status {
 
     @Override
     public void eachTurn(Entity e) {
-        e.setHealth(e.getHealth() - remaining / 20 + 1);
+        if (remaining <= 0) {
+            e.removeStatus(this);
+            return;
+        }
+        GamePanel.addMessage("The poison spreads in your body!");
+        e.takeDamage(remaining / 20 + 1, source);
         remaining -= remaining / 20 + 1;
         if (remaining <= 0) {
             e.removeStatus(this);
@@ -39,6 +43,14 @@ public class Poison implements Status {
 
     @Override
     public void onEnd(Entity e) {
+        if (e instanceof Player) {
+            GamePanel.addMessage("Your body has purged the poison.");
+        }
+    }
+
+    @Override
+    public String getName() {
+        return "Poison";
     }
 
     /**
