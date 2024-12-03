@@ -98,7 +98,9 @@ public abstract class Entity {
     }
 
     public void eachTurn() {
-        statuses.forEach((k, v) -> v.eachTurn(this));
+        for (String key : statuses.keySet()) {
+            statuses.get(key).eachTurn(this);
+        }
     }
 
     public HashMap<String, Status> getStatuses() {
