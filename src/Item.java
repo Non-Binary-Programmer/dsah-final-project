@@ -1,56 +1,30 @@
 package src;
 
-public abstract class Item implements Comparable<Item> {
-    public final char ICON;
-    public final int PRIORITY; // Lower = more priority
-    public final int STACK_SIZE;
-    private int count;
+import org.jetbrains.annotations.NotNull;
 
-    public Item(char ICON, int PRIORITY, int STACK_SIZE, int count) {
-        this.ICON = ICON;
-        this.PRIORITY = PRIORITY;
-        this.STACK_SIZE = STACK_SIZE;
-        this.count = count;
-    }
-
-    public int getCount () {
-        return count;
-    }
+public interface Item extends Comparable<Item> {
+    int getCount();
 
     /**
      * Increases count up to a maximum of <code>STACK_SIZE</code>
      * @param items Number of items to be added
      * @return The amount of items left over
      */
-    public int addItems (int items) {
-        if (count + items > STACK_SIZE) {
-            int temp = count + items - STACK_SIZE;
-            count = STACK_SIZE;
-            return temp;
-        }
-        count += items;
-        return 0;
-    }
+    int addItems(int items);
 
-    public abstract String getName();
+    String getName();
 
-    @Override
-    public int compareTo(Item o) {
-        if (PRIORITY != o.PRIORITY) {
-            return o.PRIORITY - PRIORITY;
-        }
-        return getName().compareTo(o.getName());
-    }
+    int compareTo(@NotNull Item other);
 
-    public String toString() {
-        if (count != 1) {
-            return count + " " + getName() + "s";
-        } else {
-            return "A " + getName();
-        }
-    }
+    String toString();
 
-    public void setCount (int count) {
-        this.count = count;
-    }
+    String toString(boolean capitalized);
+
+    void setCount(int count);
+
+    char getIcon();
+
+    int getPriority();
+
+    int getStackSize();
 }

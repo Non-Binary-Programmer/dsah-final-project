@@ -3,7 +3,7 @@ package src;
 import java.util.Optional;
 
 public class Tile {
-    private Item[] items;
+    private ItemBase[] items;
     private int money;
     private Entity entity;
     private Terrain terrain;

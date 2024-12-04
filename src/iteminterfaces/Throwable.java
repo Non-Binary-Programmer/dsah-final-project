@@ -1,8 +1,9 @@
 package src.iteminterfaces;
 
 import src.Entity;
+import src.Item;
 
-public interface Throwable {
+public interface Throwable extends Item {
     /**
      * Attempts to hit the target.
      * @param source The entity throwing this Throwable.

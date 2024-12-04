@@ -1,8 +1,10 @@
 package src.iteminterfaces;
 
 import src.Entity;
+import src.Item;
+import src.Player;
 
-public interface Fireable {
+public interface Fireable extends Wearable {
     /**
      * Attempts to hit the target.
      * @param source The entity shooting from this Fireable.
@@ -15,4 +17,10 @@ public interface Fireable {
     int getRange(Ammo ammo);
 
     boolean canFire(Ammo ammo);
+
+    @Override
+    default boolean equip (Player player) {
+        player.setRanged(this);
+        return true;
+    }
 }

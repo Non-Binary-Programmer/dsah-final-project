@@ -4,7 +4,7 @@ import src.*;
 import src.iteminterfaces.Weapon;
 import src.iteminterfaces.Wearable;
 
-public class Sword extends Item implements Wearable, Weapon {
+public class Sword extends ItemBase implements Wearable, Weapon {
     private int toHit;
     private int dam;
 
@@ -33,6 +33,8 @@ public class Sword extends Item implements Wearable, Weapon {
 
     @Override
     public void attack(Player player, Enemy enemy) {
+        System.out.println("dam: " + dam);
+        System.out.println("toHit: " + toHit);
         if (Math.random() * (19 + player.getLevel() + toHit) > (enemy.getArmor() + 20) * Math.random()) {
             GamePanel.addMessage("You hit " + enemy + '.');
             enemy.takeDamage((int) (Math.random() * 6) + 1 + dam, player);
@@ -53,6 +55,6 @@ public class Sword extends Item implements Wearable, Weapon {
 
     @Override
     public Slot getSlot() {
-        return null;
+        return Slot.WEAPON;
     }
 }

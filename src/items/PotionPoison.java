@@ -6,7 +6,7 @@ import src.iteminterfaces.Quaffable;
 import src.iteminterfaces.Throwable;
 import src.statuses.Poison;
 
-public class PotionPoison extends Item implements Quaffable, Throwable, Ammo {
+public class PotionPoison extends ItemBase implements Quaffable, Throwable, Ammo {
     private int severity;
 
     public PotionPoison (int severity, int count) {

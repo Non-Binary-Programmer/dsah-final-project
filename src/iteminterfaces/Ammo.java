@@ -1,8 +1,9 @@
 package src.iteminterfaces;
 
 import src.Entity;
+import src.Item;
 
-public interface Ammo {
+public interface Ammo extends Item {
     int getBaseRange();
 
     int getHitMod();

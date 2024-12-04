@@ -79,6 +79,7 @@ public abstract class Entity {
         if (this.health <= 0) {
             die(game.tileAt(row, col), source);
         }
+        System.out.println(this + " took " + damage + " damage!");
     }
 
     public abstract void die(Tile location, Entity killer);

@@ -6,7 +6,7 @@ import src.iteminterfaces.Fireable;
 import src.iteminterfaces.Quaffable;
 import src.iteminterfaces.Wearable;
 
-public class Sling extends Item implements Fireable, Wearable {
+public class Sling extends ItemBase implements Fireable, Wearable {
     public Sling(char ICON, int PRIORITY) {
         super('}', 2, 1, 1);
     }

@@ -5,7 +5,7 @@ import src.iteminterfaces.Quaffable;
 import src.iteminterfaces.Throwable;
 import src.statuses.Poison;
 
-public class PotionCureLight extends Item implements Quaffable, Throwable {
+public class PotionCureLight extends ItemBase implements Quaffable, Throwable {
     public PotionCureLight(int count) {
         super('?', 0, 40, count);
     }

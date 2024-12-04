@@ -1,9 +1,13 @@
 package src;
 
 import src.enemies.GiantRat;
+import src.iteminterfaces.Fireable;
 import src.iteminterfaces.Quaffable;
+import src.iteminterfaces.Weapon;
+import src.iteminterfaces.Wearable;
 import src.items.PotionCureLight;
 import src.items.PotionPoison;
+import src.items.Sword;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -22,6 +26,7 @@ public class GameManager implements KeyListener {
         NORMAL,
         QUAFF,
         INVENTORY,
+        WEAR,
         DEAD
     }
 
@@ -50,6 +55,7 @@ public class GameManager implements KeyListener {
         }
         player.giveItem(new PotionPoison(30, 2));
         player.giveItem(new PotionCureLight(5));
+        player.giveItem(new Sword(10, 10));
         gamePanel.updateDisplay(map, HEIGHT / 2, WIDTH / 2);
     }
 
@@ -67,6 +73,11 @@ public class GameManager implements KeyListener {
                         GamePanel.addMessage("Select a potion to quaff.");
                         panel.displayInventory(player.getItems(), item -> item instanceof Quaffable);
                         state = State.QUAFF;
+                    }
+                    case 'w' -> {
+                        GamePanel.addMessage("Select an item to wear or wield.");
+                        panel.displayInventory(player.getItems(), item -> item instanceof Wearable);
+                        state = State.WEAR;
                     }
                     case 'i' -> {
                         GamePanel.addMessage("Your inventory:");
@@ -116,20 +127,36 @@ public class GameManager implements KeyListener {
                 }
             }
             case QUAFF -> {
-                if (player.getItems().get((e.getKeyChar() - 'a')) instanceof Quaffable potion) {
+                if (player.getItemAt(e.getKeyChar()) instanceof Quaffable potion) {
                     potion.quaff(player);
-                    Item potions = (Item) potion;
+                    ItemBase potions = (ItemBase) potion;
                     potions.setCount(potions.getCount() - 1);
                     if (potions.getCount() == 0) {
                         player.getItems().remove(potions);
                     }
                     actionPerformed = true;
-                    state = State.NORMAL;
                 } else {
                     GamePanel.addMessage("See README if confused.");
                     panel.updateDisplay(map, focusRow, focusCol);
-                    state = State.NORMAL;
                 }
+                state = State.NORMAL;
+            }
+            case WEAR -> {
+                if (player.getItemAt(e.getKeyChar()) instanceof Wearable equip) {
+                    if (player.equip(equip)) {
+                        actionPerformed = true;
+                        player.getItems().remove(equip);
+                        if (equip instanceof Weapon || equip instanceof Fireable) {
+                            GamePanel.addMessage("You wield " + equip.toString(false));
+                        } else {
+                            GamePanel.addMessage("You wear " + equip.toString(false));
+                        }
+                    }
+                } else {
+                    GamePanel.addMessage("See README if confused.");
+                    panel.updateDisplay(map, focusRow, focusCol);
+                }
+                state = State.NORMAL;
             }
         }
         if (actionPerformed) {

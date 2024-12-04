@@ -1,8 +1,9 @@
 package src.iteminterfaces;
 
+import src.Item;
 import src.Player;
 
-public interface Wearable {
+public interface Wearable extends Item {
     enum Slot {
         HEAD,
         BODY,

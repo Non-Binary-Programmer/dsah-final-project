@@ -4,7 +4,7 @@ import src.*;
 import src.iteminterfaces.Ammo;
 import src.iteminterfaces.Throwable;
 
-public class Stone extends Item implements Ammo, Throwable {
+public class Stone extends ItemBase implements Ammo, Throwable {
     public Stone(char ICON, int PRIORITY, int count) {
         super('{', 1, 40, count);
     }

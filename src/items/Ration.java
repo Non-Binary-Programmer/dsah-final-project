@@ -1,10 +1,10 @@
 package src.items;
 
-import src.Item;
+import src.ItemBase;
 import src.Player;
 import src.iteminterfaces.Food;
 
-public class Ration extends Item implements Food {
+public class Ration extends ItemBase implements Food {
     public Ration(int count) {
         super(',', 3, 40, count);
     }

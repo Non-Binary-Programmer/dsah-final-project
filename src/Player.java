@@ -1,20 +1,25 @@
 package src;
 
+import org.jetbrains.annotations.Nullable;
 import src.iteminterfaces.Fireable;
 import src.iteminterfaces.Weapon;
+import src.iteminterfaces.Wearable;
 import src.items.Sword;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Player extends Entity {
     private double experience;
     private int level;
     private double toNextLevel;
-    private ArrayList<Item> items;
+    private final ArrayList<Item> items;
     private double fed;
     private Weapon weapon;
     private Fireable ranged;
+    private final HashMap<Wearable.Slot, Wearable> equipment = new HashMap<>();
+    private final int INVENTORY_SIZE = 52;
 
     public Player(int row, int col, GameManager game) {
         super('@', row, col, game);
@@ -26,6 +31,7 @@ public class Player extends Entity {
         this.toNextLevel = 10;
         this.fed = 1.0;
         this.weapon = new Sword(0, 0);
+        equipment.put(Wearable.Slot.WEAPON, (Wearable) weapon);
 
         items = new ArrayList<>();
     }
@@ -87,24 +93,79 @@ public class Player extends Entity {
         return items;
     }
 
-    public void giveItem (Item item) {
+    public boolean giveItem (Item item) {
         for (Item owned : items) {
             if (owned.getName().equals(item.getName())) {
                 int leftover = owned.addItems(item.getCount());
                 if (leftover > 0) {
                     item.setCount(leftover);
-                    items.add(item);
-                    return;
+                    if (items.size() != INVENTORY_SIZE) {
+                        items.add(item);
+                    } else {
+                        owned.setCount(owned.getCount() - item.getCount());
+                        return false;
+                    }
                 }
+                return true;
             }
+        }
+        if (items.size() == INVENTORY_SIZE) {
+            return false;
         }
         items.add(item);
         items.sort(Item::compareTo);
+        return true;
     }
 
     @Override
     public void takeDamage(int damage, Entity source) {
         super.takeDamage(damage, source);
         GamePanel.addMessage("You have " + getHealth() + " health left.");
+    }
+
+    /**
+     * Attempts to equip a Wearable. Applies any effects relating to donning or doffing that Wearable.
+     * The currently worn Wearable in the corresponding slot will be placed into the inventory.
+     * @param toEquip The Wearable that will be equipped. Not removed from inventory etc.
+     * @return true if the Wearable is successfully equipped, false otherwise.
+     */
+    public boolean equip (Wearable toEquip) {
+        Wearable.Slot changing = toEquip.getSlot();
+        System.out.println(equipment);
+        System.out.println(changing);
+        if (equipment.containsKey(changing)) {
+            if (equipment.get(changing).unequip(this)) {
+                if (toEquip.equip(this)) {
+                    giveItem(equipment.get(changing));
+                    System.out.println(equipment.get(changing));
+                    System.out.println(items);
+                    equipment.put(changing, toEquip);
+                    return true;
+                }
+                equipment.get(changing).equip(this);
+            }
+        } else {
+            if (toEquip.equip(this)) {
+                equipment.put(changing, toEquip);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    public Item getItemAt (char slot) {
+        if (items.size() > 'a' - slot && 'a' - slot >= 0) {
+            return items.get('a' - slot);
+        }
+        return null;
+    }
+
+    public void setWeapon(Weapon weapon) {
+        this.weapon = weapon;
+    }
+
+    public void setRanged(Fireable ranged) {
+        this.ranged = ranged;
     }
 }
