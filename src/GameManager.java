@@ -11,6 +11,8 @@ import src.items.Sword;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameManager implements KeyListener {
     private final GamePanel panel;
@@ -34,29 +36,182 @@ public class GameManager implements KeyListener {
         this.panel = gamePanel;
         map = new Tile[HEIGHT][WIDTH];
 
-        for (int row = 0; row < HEIGHT; row++) {
-            for (int col = 0; col < WIDTH; col++) {
-                if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1){
-                    map[row][col] = new Tile(Terrain.WALL, row, col);
-                } else {
-                    map[row][col] = new Tile(Terrain.EMPTY, row, col);
-                    if (Math.random() < 0.01) {
-                        map[row][col].setEntity(new GiantRat(this, row, col));
-                    }
-                }
-                map[row][col].setSeen(true);
-                if (row == HEIGHT / 2 && col == WIDTH / 2) {
-                    this.player = new Player(row, col, this);
-                    map[row][col].setEntity(player);
-                    focusCol = col;
-                    focusRow = row;
-                }
-            }
-        }
+        map = generateMap(HEIGHT / 2, WIDTH / 2);
         player.giveItem(new PotionPoison(30, 2));
         player.giveItem(new PotionCureLight(5));
         player.giveItem(new Sword(10, 10));
         gamePanel.updateDisplay(map, HEIGHT / 2, WIDTH / 2);
+    }
+
+    public Tile[][] generateMap(int startRow, int startCol) {
+        Tile[][] map = new Tile[HEIGHT][WIDTH];
+        ArrayList<Room> rooms = new ArrayList<>();
+        double typeChooser = Math.random();
+        if (typeChooser < 2.0/3) { // Vertical walls first
+            int[] verticalWalls = new int[WIDTH / 20];
+            int[][] horizontalWalls = new int[WIDTH / 20][HEIGHT / 10];
+
+            for (int i = 0; i < WIDTH / 20; i++) { // Choose vertical walls
+                verticalWalls[i] = (int) (Math.random() * WIDTH - 2) + 1;
+                verticalWalls = Arrays.stream(verticalWalls).sorted().toArray();
+            }
+            for (int i = 0; i < WIDTH / 20; i++) { // Choose horizontal walls btwn each vertical wall
+                for (int j = 0; j < HEIGHT / 10; j++) {
+                    horizontalWalls[i][j] = (int) (Math.random() * HEIGHT - 2) + 1;
+                }
+                horizontalWalls[i] = Arrays.stream(horizontalWalls[i]).sorted().toArray();
+            }
+
+            // Create rooms
+            rooms.add(new Room(verticalWalls[0] - 1, horizontalWalls[0][0] - 1, 1, 1));
+            for (int j = 1; j < horizontalWalls[0].length; j++) {
+                rooms.add(new Room(
+                        verticalWalls[0] - 1,
+                        horizontalWalls[0][j] - horizontalWalls[0][j - 1] - 1,
+                        horizontalWalls[0][j-1] + 1,
+                        1));
+            }
+            for (int i = 1; i < verticalWalls.length; i++) {
+                for (int j = 1; j < horizontalWalls[i].length; j++) {
+                    rooms.add(new Room(
+                            verticalWalls[i] - verticalWalls[i - 1] - 1,
+                            horizontalWalls[i][j] - horizontalWalls[i][j-1] - 1,
+                            horizontalWalls[i][j-1] + 1,
+                            verticalWalls[i - 1] + 1
+                            ));
+                }
+            }
+
+            // Create tiles
+            int vWall = 0;
+            boolean onVWall = false;
+            for (int col = 0; col < WIDTH; col++) {
+                int hWall = 0;
+                boolean onHWall = false;
+                if (col == verticalWalls[vWall]) {
+                    onVWall = true;
+                    vWall++;
+                } else {
+                    onVWall = false;
+                }
+                for (int row = 0; row < HEIGHT; row++) {
+                    if (row == horizontalWalls[vWall][hWall]) {
+                        onHWall = true;
+                        hWall++;
+                    } else {
+                        onHWall = false;
+                    }
+                    if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1) { // Border walls
+                        map[row][col] = new Tile(Terrain.WALL, row, col);
+                        continue;
+                    }
+
+                    if (onHWall || onVWall) { // Non-border walls
+                        if (row == startRow && col == startCol) {
+                            map[row][col] = new Tile(Terrain.STAIRS_UP, row, col);
+                            map[row][col].setEntity(player);
+                            continue;
+                        }
+                        if (Math.random() < 0.95) {
+                            map[row][col] = new Tile(Terrain.WALL, row, col);
+                            continue;
+                        }
+                        map[row][col] = new Tile(Terrain.EMPTY, row, col);
+                        continue;
+                    }
+                    if (row == startRow && col == startCol) {
+                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col);
+                        rooms.get(hWall + vWall * horizontalWalls[vWall].length).setTile(row, col, map[row][col]);
+                        map[row][col].setEntity(player);
+                        continue;
+                    }
+                    map[row][col] = new Tile(Terrain.EMPTY, row, col); // Tile in a room
+                    rooms.get(hWall + vWall * horizontalWalls[vWall].length).setTile(row, col, map[row][col]);
+                }
+            }
+        } else { // Horizontal walls first
+            int[] horizontalWalls = new int[HEIGHT / 10];
+            int[][] verticalWalls = new int[HEIGHT / 10][WIDTH / 20];
+
+            for (int i = 0; i < HEIGHT / 10; i++) { // Choose horizontal walls
+                horizontalWalls[i] = (int) (Math.random() * HEIGHT - 2) + 1;
+                horizontalWalls = Arrays.stream(horizontalWalls).sorted().toArray();
+            }
+            for (int i = 0; i < HEIGHT / 10; i++) { // Choose vertical walls btwn each horizontal wall
+                for (int j = 0; j < WIDTH / 20; j++) {
+                    verticalWalls[i][j] = (int) (Math.random() * WIDTH - 2) + 1;
+                }
+                verticalWalls[i] = Arrays.stream(verticalWalls[i]).sorted().toArray();
+            }
+
+            // Create rooms
+            rooms.add(new Room(verticalWalls[0][0] - 1, horizontalWalls[0] - 1, 1, 1));
+            for (int j = 1; j < verticalWalls[0].length; j++) {
+                rooms.add(new Room(
+                        verticalWalls[0][j] - verticalWalls[0][j - 1] - 1,
+                        horizontalWalls[0] - 1,
+                        1,
+                        verticalWalls[0][j-1] + 1));
+            }
+            for (int i = 1; i < horizontalWalls.length; i++) {
+                for (int j = 1; j < verticalWalls[i].length; j++) {
+                    rooms.add(new Room(
+                            verticalWalls[i][j] - verticalWalls[i][j-1] - 1,
+                            horizontalWalls[i] - horizontalWalls[i - 1] - 1,
+                            horizontalWalls[i - 1] + 1,
+                            verticalWalls[i][j-1] + 1
+                    ));
+                }
+            }
+
+            // Create tiles
+            int hWall = 0;
+            boolean onHWall = false;
+            for (int row = 0; row < HEIGHT; row++) {
+                int vWall = 0;
+                boolean onVWall = false;
+                if (row == horizontalWalls[hWall]) {
+                    onHWall = true;
+                    hWall++;
+                } else {
+                    onHWall = false;
+                }
+                for (int col = 0; col < WIDTH; col++) {
+                    if (col == verticalWalls[hWall][vWall]) {
+                        onVWall = true;
+                        vWall++;
+                    } else {
+                        onVWall = false;
+                    }
+                    if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1) { // Border walls
+                        map[row][col] = new Tile(Terrain.WALL, row, col);
+                        continue;
+                    }
+                    if (onHWall || onVWall) { // Non-border walls
+                        if (row == startRow && col == startCol) {
+                            map[row][col] = new Tile(Terrain.STAIRS_UP, row, col);
+                            map[row][col].setEntity(player);
+                            continue;
+                        }
+                        if (Math.random() < 0.95) {
+                            map[row][col] = new Tile(Terrain.WALL, row, col);
+                            continue;
+                        }
+                        map[row][col] = new Tile(Terrain.EMPTY, row, col);
+                        continue;
+                    }
+                    if (row == startRow && col == startCol) {
+                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col);
+                        map[row][col].setEntity(player);
+                        rooms.get(vWall + hWall * verticalWalls[vWall].length).setTile(row, col, map[row][col]);
+                        continue;
+                    }
+                    map[row][col] = new Tile(Terrain.EMPTY, row, col); // Tile in a room
+                    rooms.get(vWall + hWall * verticalWalls[vWall].length).setTile(row, col, map[row][col]);
+                }
+            }
+        }
+        return map;
     }
 
     public Tile tileAt(int row, int col) {
