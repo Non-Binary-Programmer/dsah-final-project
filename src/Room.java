@@ -16,6 +16,12 @@ public class Room {
     }
 
     public void setTile(int row, int col, Tile tile) {
+        System.out.println("row " + row);
+        System.out.println("col " + col);
+        System.out.println("width " + width);
+        System.out.println("height " + height);
+        System.out.println("startRow " + startRow);
+        System.out.println("startCol " + startCol);
         tiles[row - startRow][col - startCol] = tile;
     }
 }

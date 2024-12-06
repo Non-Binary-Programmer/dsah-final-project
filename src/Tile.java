@@ -10,14 +10,16 @@ public class Tile {
     private boolean seen;
     private final int row;
     private final int col;
+    private final Room room;
 
-    public Tile (Terrain terrain, int row, int col) {
+    public Tile (Terrain terrain, int row, int col, Room room) {
         this.terrain = terrain;
         this.row = row;
         this.col = col;
         money = 0;
         seen = false;
         entity = null;
+        this.room = room;
     }
 
     public Optional<Entity> getEntity() {
@@ -89,5 +91,13 @@ public class Tile {
 
     public void setSeen(boolean seen) {
         this.seen = seen;
+    }
+
+    public String toString() {
+        return this.getVisual() + "";
+    }
+
+    public Room getRoom() {
+        return room;
     }
 }
