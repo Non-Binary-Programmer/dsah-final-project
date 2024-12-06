@@ -61,9 +61,9 @@ public class GameManager implements KeyListener {
         Tile[][] map = new Tile[HEIGHT][WIDTH];
         ArrayList<Room> rooms = new ArrayList<>();
         double typeChooser = Math.random();
-        if (typeChooser < 2.0/3) { // Vertical walls first
+        if (typeChooser < 3.0/3) { // Vertical walls first
             int[] verticalWalls = new int[WIDTH / 20];
-            int[][] horizontalWalls = new int[WIDTH / 20][HEIGHT / 10];
+            int[][] horizontalWalls = new int[WIDTH / 20 + 1][HEIGHT / 10];
             HashSet<Integer> seenWalls = new HashSet<>();
 
             for (int i = 0; i < WIDTH / 20; i++) { // Choose vertical walls
@@ -75,7 +75,7 @@ public class GameManager implements KeyListener {
                 seenWalls.add(rand);
             }
             verticalWalls = Arrays.stream(verticalWalls).sorted().toArray();
-            for (int i = 0; i < WIDTH / 20; i++) { // Choose horizontal walls btwn each vertical wall
+            for (int i = 0; i < WIDTH / 20 + 1; i++) { // Choose horizontal walls btwn each vertical wall
                 seenWalls.clear();
                 for (int j = 0; j < HEIGHT / 10; j++) {
                     int rand = (int) (Math.random() * (HEIGHT - 2)) + 1;
@@ -98,6 +98,12 @@ public class GameManager implements KeyListener {
                         horizontalWalls[0][j] - horizontalWalls[0][j - 1] - 1
                 ));
             }
+            rooms.add(new Room(
+                    horizontalWalls[0][horizontalWalls[0].length - 1] + 1,
+                    1,
+                    verticalWalls[0] - 1,
+                    HEIGHT - horizontalWalls[0][horizontalWalls[0].length - 1] + 1
+            ));
             for (int i = 1; i < verticalWalls.length; i++) {
                 System.out.println(i);
                 rooms.add(new Room(
@@ -106,7 +112,7 @@ public class GameManager implements KeyListener {
                         verticalWalls[i] - verticalWalls[i - 1] - 1,
                         horizontalWalls[i][0] - 1
                 ));
-                for (int j = 1; j < horizontalWalls[i].length; j++) {
+                for (int j = 1; j < horizontalWalls[0].length; j++) {
                     rooms.add(new Room(
                             horizontalWalls[i][j-1] + 1,
                             verticalWalls[i - 1] + 1,
@@ -114,7 +120,33 @@ public class GameManager implements KeyListener {
                             horizontalWalls[i][j] - horizontalWalls[i][j-1] - 1
                             ));
                 }
+                rooms.add(new Room(
+                   horizontalWalls[i][horizontalWalls[0].length - 1] + 1,
+                   verticalWalls[i - 1] + 1,
+                   verticalWalls[i] - verticalWalls[i - 1] - 1,
+                   HEIGHT - horizontalWalls[i][horizontalWalls[0].length - 1] - 1
+                ));
             }
+            rooms.add(new Room(
+                    1,
+                    verticalWalls[verticalWalls.length - 1] + 1,
+                    WIDTH - verticalWalls[verticalWalls.length - 1] - 1,
+                    horizontalWalls[verticalWalls.length][0] - 1
+            ));
+            for (int j = 1; j < horizontalWalls[0].length; j++) {
+                rooms.add(new Room(
+                        horizontalWalls[verticalWalls.length][j-1] + 1,
+                        verticalWalls[verticalWalls.length - 1] + 1,
+                        WIDTH - verticalWalls[verticalWalls.length - 1] - 1,
+                        horizontalWalls[verticalWalls.length][j] - horizontalWalls[verticalWalls.length][j-1] - 1
+                ));
+            }
+            rooms.add(new Room(
+                    horizontalWalls[verticalWalls.length][horizontalWalls[0].length - 1] + 1,
+                    verticalWalls[verticalWalls.length - 1] + 1,
+                    WIDTH - verticalWalls[verticalWalls.length - 1] - 1,
+                    HEIGHT - horizontalWalls[verticalWalls.length][horizontalWalls[0].length - 1] - 1
+            ));
 
             // Create tiles
             int vWall = 0;
@@ -129,15 +161,19 @@ public class GameManager implements KeyListener {
                     } else {
                         onVWall = false;
                     }
+                } else {
+                    onVWall = false;
                 }
                 for (int row = 0; row < HEIGHT; row++) {
-                    if (vWall < verticalWalls.length && hWall < horizontalWalls[0].length) {
+                    if (vWall <= verticalWalls.length && hWall < horizontalWalls[0].length) {
                         if (row == horizontalWalls[vWall][hWall]) {
                             onHWall = true;
                             hWall++;
                         } else {
                             onHWall = false;
                         }
+                    } else {
+                        onHWall = false;
                     }
                     if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1) { // Border walls
                         map[row][col] = new Tile(Terrain.WALL, row, col, null);
@@ -158,15 +194,15 @@ public class GameManager implements KeyListener {
                         continue;
                     }
                     if (row == startRow && col == startCol) {
-                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(hWall + vWall * horizontalWalls[0].length));
-                        rooms.get(hWall + vWall * horizontalWalls[0].length).setTile(row, col, map[row][col]);
+                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(hWall + vWall * (horizontalWalls[0].length + 1)));
+                        rooms.get(hWall + vWall * (horizontalWalls[0].length + 1)).setTile(row, col, map[row][col]);
                         map[row][col].setEntity(player);
                         continue;
                     }
-                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(hWall + vWall * horizontalWalls[0].length)); // Tile in a room
+                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(hWall + vWall * (horizontalWalls[0].length + 1))); // Tile in a room
                     System.out.println(hWall);
                     System.out.println(vWall);
-                    rooms.get(hWall + vWall * horizontalWalls[0].length).setTile(row, col, map[row][col]);
+                    rooms.get(hWall + vWall * (horizontalWalls[0].length + 1)).setTile(row, col, map[row][col]);
                 }
             }
         } else { // Horizontal walls first
@@ -208,8 +244,8 @@ public class GameManager implements KeyListener {
             }
             for (int i = 1; i < horizontalWalls.length; i++) {
                 rooms.add(new Room(
-                        1,
                         horizontalWalls[i - 1] + 1,
+                        1,
                         horizontalWalls[i] - horizontalWalls[i - 1] - 1,
                         verticalWalls[i][0] - 1
                 ));
@@ -236,6 +272,8 @@ public class GameManager implements KeyListener {
                     } else {
                         onHWall = false;
                     }
+                } else {
+                    onHWall = false;
                 }
                 for (int col = 0; col < WIDTH; col++) {
                     if (hWall < horizontalWalls.length && vWall < verticalWalls[0].length) {
@@ -245,6 +283,8 @@ public class GameManager implements KeyListener {
                         } else {
                             onVWall = false;
                         }
+                    } else {
+                        onVWall = false;
                     }
                     if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1) { // Border walls
                         map[row][col] = new Tile(Terrain.WALL, row, col, null);
@@ -252,7 +292,7 @@ public class GameManager implements KeyListener {
                     }
                     if (onHWall || onVWall) { // Non-border walls
                         if (row == startRow && col == startCol) {
-                            map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(hWall + vWall * verticalWalls[0].length));
+                            map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, null);
                             map[row][col].setEntity(player);
                             continue;
                         }
@@ -264,13 +304,13 @@ public class GameManager implements KeyListener {
                         continue;
                     }
                     if (row == startRow && col == startCol) {
-                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(hWall + vWall * verticalWalls[0].length));
+                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(hWall + vWall * (verticalWalls[0].length + 1)));
                         map[row][col].setEntity(player);
-                        rooms.get(vWall + hWall * verticalWalls[0].length).setTile(row, col, map[row][col]);
+                        rooms.get(vWall + hWall * (verticalWalls[0].length + 1)).setTile(row, col, map[row][col]);
                         continue;
                     }
-                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(hWall + vWall * verticalWalls[0].length)); // Tile in a room
-                    rooms.get(vWall + hWall * verticalWalls[0].length).setTile(row, col, map[row][col]);
+                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(hWall + vWall * (verticalWalls[0].length + 1))); // Tile in a room
+                    rooms.get(vWall + hWall * (verticalWalls[0].length + 1)).setTile(row, col, map[row][col]);
                 }
             }
         }
