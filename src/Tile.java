@@ -43,6 +43,7 @@ public class Tile {
         }
         if (this.terrain == Terrain.WALL) {
             GamePanel.addMessage("There's a wall there!");
+            setSeen(true);
             return false;
         }
         this.entity = moving;

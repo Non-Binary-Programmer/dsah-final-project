@@ -50,8 +50,28 @@ public class GameManager implements KeyListener {
     public void updateSeen() {
         for (int row = 0; row < HEIGHT; row++) {
             for (int col = 0; col < WIDTH; col++) {
-                if (map[row][col].getRoom() == null || map[row][col].getRoom() == map[player.getRow()][player.getCol()].getRoom()) {
+                if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1) {
                     map[row][col].setSeen(true);
+                    continue;
+                }
+                if (map[row][col].getRoom() != null && map[row][col].getRoom() == map[player.getRow()][player.getCol()].getRoom()) {
+                    map[row][col].setSeen(true);
+                }
+            }
+        }
+        for (int row = 1; row < HEIGHT - 1; row++) {
+            for (int col = 1; col < WIDTH - 1; col++) {
+                if (map[row][col].getRoom() == null) {
+                    if ((map[row - 1][col].isSeen() && map[row - 1][col].getRoom() != null)
+                            || (map[row + 1][col].isSeen() && map[row + 1][col].getRoom() != null)
+                            || (map[row][col - 1].isSeen() && map[row][col - 1].getRoom() != null)
+                            || (map[row][col + 1].isSeen() && map[row][col + 1].getRoom() != null)
+                            || (map[row - 1][col - 1].isSeen() && map[row - 1][col - 1].getRoom() != null)
+                            || (map[row + 1][col + 1].isSeen() && map[row + 1][col + 1].getRoom() != null)
+                            || (map[row + 1][col - 1].isSeen() && map[row + 1][col - 1].getRoom() != null)
+                            || (map[row - 1][col + 1].isSeen() && map[row - 1][col + 1].getRoom() != null)) {
+                        map[row][col].setSeen(true);
+                    }
                 }
             }
         }
@@ -61,7 +81,7 @@ public class GameManager implements KeyListener {
         Tile[][] map = new Tile[HEIGHT][WIDTH];
         ArrayList<Room> rooms = new ArrayList<>();
         double typeChooser = Math.random();
-        if (typeChooser < 3.0/3) { // Vertical walls first
+        if (typeChooser < 2.0/3) { // Vertical walls first
             int[] verticalWalls = new int[WIDTH / 20];
             int[][] horizontalWalls = new int[WIDTH / 20 + 1][HEIGHT / 10];
             HashSet<Integer> seenWalls = new HashSet<>();
@@ -207,19 +227,19 @@ public class GameManager implements KeyListener {
             }
         } else { // Horizontal walls first
             int[] horizontalWalls = new int[HEIGHT / 10];
-            int[][] verticalWalls = new int[HEIGHT / 10][WIDTH / 20];
+            int[][] verticalWalls = new int[HEIGHT / 10 + 1][WIDTH / 20];
             HashSet<Integer> seenWalls = new HashSet<>();
 
             for (int i = 0; i < HEIGHT / 10; i++) { // Choose horizontal walls
-                int rand = (int) (Math.random() * (HEIGHT - 2)) + 1;
-                while (seenWalls.contains(rand)) {
+                int rand = 0;
+                do {
                     rand = (int) (Math.random() * (HEIGHT - 2)) + 1;
-                }
+                } while (seenWalls.contains(rand));
                 horizontalWalls[i] = rand;
                 seenWalls.add(rand);
             }
             horizontalWalls = Arrays.stream(horizontalWalls).sorted().toArray();
-            for (int i = 0; i < HEIGHT / 10; i++) { // Choose vertical walls btwn each horizontal wall
+            for (int i = 0; i < HEIGHT / 10 + 1; i++) { // Choose horizontal walls btwn each vertical wall
                 seenWalls.clear();
                 for (int j = 0; j < WIDTH / 20; j++) {
                     int rand = (int) (Math.random() * (WIDTH - 2)) + 1;
@@ -233,23 +253,35 @@ public class GameManager implements KeyListener {
             }
 
             // Create rooms
-            rooms.add(new Room(1, 1, verticalWalls[0][0] - 1, horizontalWalls[0] - 1));
+            rooms.add(new Room(
+                    1,
+                    1,
+                    verticalWalls[0][0] - 1,
+                    horizontalWalls[0] - 1
+            ));
             for (int j = 1; j < verticalWalls[0].length; j++) {
                 rooms.add(new Room(
                         1,
+                        verticalWalls[0][j-1] + 1,
                         verticalWalls[0][j] - verticalWalls[0][j - 1] - 1,
-                        horizontalWalls[0] - 1,
-                        verticalWalls[0][j-1] + 1
+                        horizontalWalls[0] - 1
                 ));
             }
+            rooms.add(new Room(
+                    1,
+                    verticalWalls[0][verticalWalls[0].length - 1] + 1,
+                    WIDTH - verticalWalls[0][verticalWalls[0].length - 1] + 1,
+                    horizontalWalls[0] - 1
+            ));
             for (int i = 1; i < horizontalWalls.length; i++) {
+                System.out.println(i);
                 rooms.add(new Room(
                         horizontalWalls[i - 1] + 1,
                         1,
-                        horizontalWalls[i] - horizontalWalls[i - 1] - 1,
-                        verticalWalls[i][0] - 1
+                        verticalWalls[i][0] - 1,
+                        horizontalWalls[i] - horizontalWalls[i - 1] - 1
                 ));
-                for (int j = 1; j < verticalWalls[i].length; j++) {
+                for (int j = 1; j < verticalWalls[0].length; j++) {
                     rooms.add(new Room(
                             horizontalWalls[i - 1] + 1,
                             verticalWalls[i][j-1] + 1,
@@ -257,14 +289,40 @@ public class GameManager implements KeyListener {
                             horizontalWalls[i] - horizontalWalls[i - 1] - 1
                     ));
                 }
+                rooms.add(new Room(
+                        horizontalWalls[i - 1] + 1,
+                        verticalWalls[i][verticalWalls[0].length - 1] + 1,
+                        WIDTH - verticalWalls[i][verticalWalls[0].length - 1] - 1,
+                        horizontalWalls[i] - horizontalWalls[i - 1] - 1
+                ));
             }
+            rooms.add(new Room(
+                    horizontalWalls[horizontalWalls.length - 1] + 1,
+                    1,
+                    verticalWalls[horizontalWalls.length][0] - 1,
+                    HEIGHT - horizontalWalls[horizontalWalls.length - 1] - 1
+            ));
+            for (int j = 1; j < verticalWalls[0].length; j++) {
+                rooms.add(new Room(
+                        horizontalWalls[horizontalWalls.length - 1] + 1,
+                        verticalWalls[horizontalWalls.length][j-1] + 1,
+                        verticalWalls[horizontalWalls.length][j] - verticalWalls[horizontalWalls.length][j-1] - 1,
+                        HEIGHT - horizontalWalls[horizontalWalls.length - 1] - 1
+                ));
+            }
+            rooms.add(new Room(
+                    horizontalWalls[horizontalWalls.length - 1] + 1,
+                    verticalWalls[horizontalWalls.length][verticalWalls[0].length - 1] + 1,
+                    WIDTH - verticalWalls[horizontalWalls.length][verticalWalls[0].length - 1] - 1,
+                    HEIGHT - horizontalWalls[horizontalWalls.length - 1] - 1
+            ));
 
             // Create tiles
             int hWall = 0;
-            boolean onHWall = false;
+            boolean onHWall;
             for (int row = 0; row < HEIGHT; row++) {
                 int vWall = 0;
-                boolean onVWall = false;
+                boolean onVWall;
                 if (hWall < horizontalWalls.length) {
                     if (row == horizontalWalls[hWall]) {
                         onHWall = true;
@@ -276,7 +334,7 @@ public class GameManager implements KeyListener {
                     onHWall = false;
                 }
                 for (int col = 0; col < WIDTH; col++) {
-                    if (hWall < horizontalWalls.length && vWall < verticalWalls[0].length) {
+                    if (hWall <= horizontalWalls.length && vWall < verticalWalls[0].length) {
                         if (col == verticalWalls[hWall][vWall]) {
                             onVWall = true;
                             vWall++;
@@ -290,6 +348,7 @@ public class GameManager implements KeyListener {
                         map[row][col] = new Tile(Terrain.WALL, row, col, null);
                         continue;
                     }
+
                     if (onHWall || onVWall) { // Non-border walls
                         if (row == startRow && col == startCol) {
                             map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, null);
@@ -304,12 +363,14 @@ public class GameManager implements KeyListener {
                         continue;
                     }
                     if (row == startRow && col == startCol) {
-                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(hWall + vWall * (verticalWalls[0].length + 1)));
-                        map[row][col].setEntity(player);
+                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(vWall + hWall * (verticalWalls[0].length + 1)));
                         rooms.get(vWall + hWall * (verticalWalls[0].length + 1)).setTile(row, col, map[row][col]);
+                        map[row][col].setEntity(player);
                         continue;
                     }
-                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(hWall + vWall * (verticalWalls[0].length + 1))); // Tile in a room
+                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(vWall + hWall * (verticalWalls[0].length + 1))); // Tile in a room
+                    System.out.println(Arrays.toString(horizontalWalls));
+                    System.out.println(Arrays.deepToString(verticalWalls));
                     rooms.get(vWall + hWall * (verticalWalls[0].length + 1)).setTile(row, col, map[row][col]);
                 }
             }
