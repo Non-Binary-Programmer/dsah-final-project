@@ -1,6 +1,9 @@
 package src;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class Tile {
     private ItemBase[] items;
@@ -11,11 +14,13 @@ public class Tile {
     private final int row;
     private final int col;
     private final Room room;
+    private final GameManager game;
 
-    public Tile (Terrain terrain, int row, int col, Room room) {
+    public Tile (Terrain terrain, int row, int col, Room room, GameManager game) {
         this.terrain = terrain;
         this.row = row;
         this.col = col;
+        this.game = game;
         money = 0;
         seen = false;
         entity = null;
@@ -100,5 +105,67 @@ public class Tile {
 
     public Room getRoom() {
         return room;
+    }
+
+    /**
+     * Returns an unordered list of all tiles adjacent to this one.
+     * @return The list of tiles
+     */
+    public List<Tile> getAdjacent() {
+        return getAdjacent(e -> true);
+    }
+
+    /**
+     * Returns an unordered list of all tiles adjacent to this one matching a given condition.
+     * @param condition The condition to check each tile for
+     * @return The list of tiles
+     */
+    public List<Tile> getAdjacent(Predicate<Tile> condition) {
+        ArrayList<Tile> adjacent = new ArrayList<>();
+        if (this.row != 0) {
+            if (this.col != 0) {
+                if (condition.test(game.tileAt(row - 1, col - 1))) {
+                    adjacent.add(game.tileAt(row - 1, col - 1));
+                }
+            }
+            if (condition.test(game.tileAt(row - 1, col))) {
+                adjacent.add(game.tileAt(row - 1, col));
+            }
+            if (this.col != GameManager.WIDTH - 1) {
+                if (condition.test(game.tileAt(row - 1, col + 1))) {
+                    adjacent.add(game.tileAt(row - 1, col + 1));
+                }
+            }
+        }
+        if (this.col != 0) {
+            if (condition.test(game.tileAt(row, col - 1))) {
+                adjacent.add(game.tileAt(row, col - 1));
+            }
+        }
+        if (this.col != GameManager.WIDTH - 1) {
+            if (condition.test(game.tileAt(row, col + 1))) {
+                adjacent.add(game.tileAt(row, col + 1));
+            }
+        }
+        if (this.row != GameManager.HEIGHT - 1) {
+            if (this.col != 0) {
+                if (condition.test(game.tileAt(row + 1, col - 1))) {
+                    adjacent.add(game.tileAt(row + 1, col - 1));
+                }
+            }
+            if (condition.test(game.tileAt(row + 1, col))) {
+                adjacent.add(game.tileAt(row + 1, col));
+            }
+            if (this.col != GameManager.WIDTH - 1) {
+                if (condition.test(game.tileAt(row + 1, col + 1))) {
+                    adjacent.add(game.tileAt(row + 1, col + 1));
+                }
+            }
+        }
+        return adjacent;
+    }
+
+    public Terrain getTerrain() {
+        return terrain;
     }
 }

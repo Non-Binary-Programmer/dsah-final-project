@@ -1,5 +1,6 @@
 package src;
 
+import org.jetbrains.annotations.NotNull;
 import src.enemies.GiantRat;
 import src.iteminterfaces.Fireable;
 import src.iteminterfaces.Quaffable;
@@ -11,10 +12,7 @@ import src.items.Sword;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 public class GameManager implements KeyListener {
     private final GamePanel panel;
@@ -39,6 +37,13 @@ public class GameManager implements KeyListener {
         map = new Tile[HEIGHT][WIDTH];
         player = new Player(HEIGHT / 2, WIDTH / 2, this);
         map = generateMap(HEIGHT / 2, WIDTH / 2);
+        for (int row = 0; row < HEIGHT; row++) {
+            for (int col = 0; col < WIDTH; col++) {
+               if (Math.random() < 0.005 && map[row][col].getEntity().isEmpty() && map[row][col].getTerrain() != Terrain.WALL) {
+                   map[row][col].setEntity(new GiantRat(this, row, col));
+               }
+            }
+        }
         updateSeen();
         player.giveItem(new PotionPoison(30, 2));
         player.giveItem(new PotionCureLight(5));
@@ -196,30 +201,30 @@ public class GameManager implements KeyListener {
                         onHWall = false;
                     }
                     if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1) { // Border walls
-                        map[row][col] = new Tile(Terrain.WALL, row, col, null);
+                        map[row][col] = new Tile(Terrain.WALL, row, col, null, this);
                         continue;
                     }
 
                     if (onHWall || onVWall) { // Non-border walls
                         if (row == startRow && col == startCol) {
-                            map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, null);
+                            map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, null, this);
                             map[row][col].setEntity(player);
                             continue;
                         }
                         if (Math.random() < 0.95) {
-                            map[row][col] = new Tile(Terrain.WALL, row, col, null);
+                            map[row][col] = new Tile(Terrain.WALL, row, col, null, this);
                             continue;
                         }
-                        map[row][col] = new Tile(Terrain.EMPTY, row, col, null);
+                        map[row][col] = new Tile(Terrain.EMPTY, row, col, null, this);
                         continue;
                     }
                     if (row == startRow && col == startCol) {
-                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(hWall + vWall * (horizontalWalls[0].length + 1)));
+                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(hWall + vWall * (horizontalWalls[0].length + 1)), this);
                         rooms.get(hWall + vWall * (horizontalWalls[0].length + 1)).setTile(row, col, map[row][col]);
                         map[row][col].setEntity(player);
                         continue;
                     }
-                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(hWall + vWall * (horizontalWalls[0].length + 1))); // Tile in a room
+                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(hWall + vWall * (horizontalWalls[0].length + 1)), this); // Tile in a room
                     System.out.println(hWall);
                     System.out.println(vWall);
                     rooms.get(hWall + vWall * (horizontalWalls[0].length + 1)).setTile(row, col, map[row][col]);
@@ -345,30 +350,30 @@ public class GameManager implements KeyListener {
                         onVWall = false;
                     }
                     if (row == 0 || row == HEIGHT - 1 || col == 0 || col == WIDTH - 1) { // Border walls
-                        map[row][col] = new Tile(Terrain.WALL, row, col, null);
+                        map[row][col] = new Tile(Terrain.WALL, row, col, null, this);
                         continue;
                     }
 
                     if (onHWall || onVWall) { // Non-border walls
                         if (row == startRow && col == startCol) {
-                            map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, null);
+                            map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, null, this);
                             map[row][col].setEntity(player);
                             continue;
                         }
                         if (Math.random() < 0.95) {
-                            map[row][col] = new Tile(Terrain.WALL, row, col, null);
+                            map[row][col] = new Tile(Terrain.WALL, row, col, null, this);
                             continue;
                         }
-                        map[row][col] = new Tile(Terrain.EMPTY, row, col, null);
+                        map[row][col] = new Tile(Terrain.EMPTY, row, col, null, this);
                         continue;
                     }
                     if (row == startRow && col == startCol) {
-                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(vWall + hWall * (verticalWalls[0].length + 1)));
+                        map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, rooms.get(vWall + hWall * (verticalWalls[0].length + 1)), this);
                         rooms.get(vWall + hWall * (verticalWalls[0].length + 1)).setTile(row, col, map[row][col]);
                         map[row][col].setEntity(player);
                         continue;
                     }
-                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(vWall + hWall * (verticalWalls[0].length + 1))); // Tile in a room
+                    map[row][col] = new Tile(Terrain.EMPTY, row, col, rooms.get(vWall + hWall * (verticalWalls[0].length + 1)), this); // Tile in a room
                     System.out.println(Arrays.toString(horizontalWalls));
                     System.out.println(Arrays.deepToString(verticalWalls));
                     rooms.get(vWall + hWall * (verticalWalls[0].length + 1)).setTile(row, col, map[row][col]);
@@ -481,6 +486,7 @@ public class GameManager implements KeyListener {
         if (actionPerformed) {
             player.eachTurn();
             updateSeen();
+            pathfindEnemies();
             this.panel.updateDisplay(map, focusRow, focusCol);
         }
     }
@@ -509,6 +515,7 @@ public class GameManager implements KeyListener {
                 if (actionPerformed) {
                     player.eachTurn();
                     updateSeen();
+                    pathfindEnemies();
                     this.panel.updateDisplay(map, focusRow, focusCol);
                 }
             }
@@ -516,6 +523,82 @@ public class GameManager implements KeyListener {
                 panel.updateDisplay(map, focusRow, focusCol);
                 state = State.NORMAL;
             }
+        }
+    }
+
+    private void pathfindEnemies() {
+        ArrayList<Enemy> toMove = new ArrayList<>();
+        for (int row = 0; row < HEIGHT; row++) {
+            for (int col = 0; col < WIDTH; col++) {
+                if (map[row][col].isSeen()) {
+                    if (map[row][col].getEntity().isPresent()) {
+                        if (map[row][col].getEntity().orElseThrow() instanceof Enemy enemy) {
+                            toMove.add(enemy);
+                        }
+                    }
+                }
+            }
+        }
+        for (Enemy enemy : toMove) {
+            Tile next = pathfindNext(tileAt(enemy.getRow(), enemy.getCol()), tileAt(player.getRow(), player.getCol()));
+            System.out.println(next.getRow());
+            System.out.println(next.getCol());
+            System.out.println(enemy.getRow());
+            System.out.println(enemy.getCol());
+            next.receiveEntity(enemy);
+        }
+    }
+
+    public Tile pathfindNext(Tile start, Tile end) {
+        HashMap<Tile, Integer> dists = new HashMap<>();
+        HashMap<Tile, Tile> previous = new HashMap<>();
+        HashSet<Tile> visited = new HashSet<>();
+        dists.put(start, 0);
+        visited.add(start);
+        WeightedTile curr = new WeightedTile(start, 0);
+        PriorityQueue<WeightedTile> frontier = new PriorityQueue<>();
+        do {
+            if (!frontier.isEmpty()) {
+                curr = frontier.poll();
+                visited.add(curr.tile);
+            }
+            for (Tile adjacent : curr.tile.getAdjacent(t -> t.getTerrain() != Terrain.WALL && (t.getEntity().stream().allMatch(e -> e == player)))) {
+
+                if (!visited.contains(adjacent)) {
+                    if (dists.containsKey(adjacent)) {
+                        if (dists.get(curr.tile) + 1 < dists.get(adjacent)) {
+                            dists.replace(adjacent, dists.get(curr.tile) + 1);
+                            previous.replace(adjacent, curr.tile);
+                        }
+                        Optional<WeightedTile> inPriorityQueue = frontier.stream().filter(e -> e.tile.equals(adjacent)).findFirst();
+                        if (inPriorityQueue.isPresent()) {
+                            frontier.remove(inPriorityQueue.get());
+                            frontier.offer(new WeightedTile(adjacent,
+                                    1 + dists.get(curr.tile) + manhattanDistance(adjacent, end)));
+                        }
+                    } else {
+                        dists.put(adjacent, dists.get(curr.tile) + 1);
+                        previous.put(adjacent, curr.tile);
+                        frontier.offer(new WeightedTile(adjacent, 1 + dists.get(curr.tile) + manhattanDistance(adjacent, end)));
+                    }
+                }
+            }
+        } while (!dists.containsKey(end));
+        Tile backtrack = end;
+        while (previous.get(backtrack) != start) {
+            backtrack = previous.get(backtrack);
+        }
+        return backtrack;
+    }
+
+    private static int manhattanDistance(Tile first, Tile second) {
+        return Math.abs(first.getCol() - second.getCol()) + Math.abs(first.getRow() - second.getRow());
+    }
+
+    private record WeightedTile(Tile tile, int weight) implements Comparable<WeightedTile> {
+        @Override
+        public int compareTo(@NotNull WeightedTile o) {
+            return weight - o.weight;
         }
     }
 

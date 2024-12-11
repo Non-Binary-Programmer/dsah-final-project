@@ -58,7 +58,6 @@ public class GamePanel extends JPanel {
         }
 
         display.setText(newDisplayText.toString());
-        System.out.println(newDisplayText);
         message.setText(messageText);
         messageText = " ";
     }
