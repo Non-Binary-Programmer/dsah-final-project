@@ -168,4 +168,8 @@ public class Tile {
     public Terrain getTerrain() {
         return terrain;
     }
+
+    public void setTerrain(Terrain terrain) {
+        this.terrain = terrain;
+    }
 }

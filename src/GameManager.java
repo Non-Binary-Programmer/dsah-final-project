@@ -15,6 +15,7 @@ import java.awt.event.KeyListener;
 import java.util.*;
 
 public class GameManager implements KeyListener {
+    private static final int STAIRS_DISTANCE = 50;
     private final GamePanel panel;
     private Tile[][] map;
     public static final int WIDTH = 200;
@@ -45,11 +46,35 @@ public class GameManager implements KeyListener {
             }
         }
         updateSeen();
+        placeStairs(tileAt(player.getRow(), player.getCol()));
         player.giveItem(new PotionPoison(30, 2));
         player.giveItem(new PotionCureLight(5));
         player.giveItem(new Sword(10, 10));
         gamePanel.updateDisplay(map, HEIGHT / 2, WIDTH / 2);
         System.out.println(Arrays.deepToString(map));
+    }
+
+    private void placeStairs(Tile start) {
+        HashSet<Tile> seen = new HashSet<>();
+        HashSet<Tile> candidates = new HashSet<>();
+        LinkedList<WeightedTile> queue = new LinkedList<>();
+        queue.offer(new WeightedTile(start, 0));
+
+        while (!queue.isEmpty()) {
+            WeightedTile t = queue.poll();
+            if (!seen.contains(t.tile)) {
+                seen.add(t.tile);
+                for (Tile neighbor : t.tile.getAdjacent((e -> e.getTerrain() != Terrain.WALL))) {
+                    if (t.weight + 1 == STAIRS_DISTANCE) {
+                        candidates.add(neighbor);
+                    }
+                    queue.offer(new WeightedTile(neighbor, t.weight + 1));
+                }
+            }
+        }
+
+        Tile stairsTile = candidates.stream().toList().get((int) (Math.random() * candidates.size()));
+        stairsTile.setTerrain(Terrain.STAIRS_DOWN);
     }
 
     public void updateSeen() {
@@ -83,7 +108,6 @@ public class GameManager implements KeyListener {
     }
 
     public Tile[][] generateMap(int startRow, int startCol) {
-        Tile[][] map = new Tile[HEIGHT][WIDTH];
         ArrayList<Room> rooms = new ArrayList<>();
         double typeChooser = Math.random();
         if (typeChooser < 2.0/3) { // Vertical walls first
@@ -209,6 +233,7 @@ public class GameManager implements KeyListener {
                         if (row == startRow && col == startCol) {
                             map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, null, this);
                             map[row][col].setEntity(player);
+                            map[row][col].setSeen(true);
                             continue;
                         }
                         if (Math.random() < 0.95) {
@@ -358,6 +383,7 @@ public class GameManager implements KeyListener {
                         if (row == startRow && col == startCol) {
                             map[row][col] = new Tile(Terrain.STAIRS_UP, row, col, null, this);
                             map[row][col].setEntity(player);
+                            map[row][col].setSeen(true);
                             continue;
                         }
                         if (Math.random() < 0.95) {
@@ -379,6 +405,11 @@ public class GameManager implements KeyListener {
                     rooms.get(vWall + hWall * (verticalWalls[0].length + 1)).setTile(row, col, map[row][col]);
                 }
             }
+        }
+        try {
+            placeStairs(map[player.getRow()][player.getCol()]);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return generateMap(startRow, startCol);
         }
         return map;
     }
@@ -442,6 +473,23 @@ public class GameManager implements KeyListener {
                     case '9' -> {
                         map[player.getRow() - 1][player.getCol() + 1].receiveEntity(player);
                         actionPerformed = true;
+                    }
+                    case '>' -> {
+                        if (map[player.getRow()][player.getCol()].getTerrain() == Terrain.STAIRS_DOWN) {
+                            map = generateMap(player.getRow(), player.getCol());
+                            for (int row = 0; row < HEIGHT; row++) {
+                                for (int col = 0; col < WIDTH; col++) {
+                                    if (Math.random() < 0.005 && map[row][col].getEntity().isEmpty() && map[row][col].getTerrain() != Terrain.WALL) {
+                                        map[row][col].setEntity(new GiantRat(this, row, col));
+                                    }
+                                }
+                            }
+                            updateSeen();
+                            placeStairs(tileAt(player.getRow(), player.getCol()));
+                            actionPerformed = true;
+                        } else {
+                            GamePanel.addMessage("There are no stairs down there!");
+                        }
                     }
                     default -> {
                         System.out.println(e.getKeyChar());
@@ -583,10 +631,13 @@ public class GameManager implements KeyListener {
                     }
                 }
             }
-        } while (!dists.containsKey(end));
+        } while (!dists.containsKey(end) && !frontier.isEmpty());
         Tile backtrack = end;
-        while (previous.get(backtrack) != start) {
+        while (previous.get(backtrack) != start && previous.get(backtrack) != null) {
             backtrack = previous.get(backtrack);
+        }
+        if (previous.get(backtrack) == null) {
+            return start;
         }
         return backtrack;
     }

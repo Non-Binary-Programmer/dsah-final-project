@@ -155,8 +155,9 @@ public class Player extends Entity {
 
     @Nullable
     public Item getItemAt (char slot) {
-        if (items.size() > 'a' - slot && 'a' - slot >= 0) {
-            return items.get('a' - slot);
+        items.sort(Item::compareTo);
+        if (items.size() > slot - 'a' && slot - 'a' >= 0) {
+            return items.get(slot - 'a');
         }
         return null;
     }
