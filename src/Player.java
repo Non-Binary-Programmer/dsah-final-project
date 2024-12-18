@@ -20,12 +20,13 @@ public class Player extends Entity {
     private Fireable ranged;
     private final HashMap<Wearable.Slot, Wearable> equipment = new HashMap<>();
     private final int INVENTORY_SIZE = 52;
+    private int turnsToRegen = 20;
 
     public Player(int row, int col, GameManager game) {
         super('@', row, col, game);
         setArmor(0);
-        setHealth(10);
         setMaxHealth(10);
+        setHealth(10);
         this.experience = 0;
         this.level = 1;
         this.toNextLevel = 10;
@@ -62,9 +63,11 @@ public class Player extends Entity {
         this.experience += experience;
         while (this.experience >= toNextLevel) {
             this.level++;
+            setMaxHealth(getMaxHealth() + (int) (Math.random() * 10) + 1);
             this.experience -= toNextLevel;
             toNextLevel *= (1.8 + 0.1 * level);
             GamePanel.addMessage("Welcome to level " + level + '.');
+            GamePanel.addMessage("Your max health is now " + getMaxHealth() + '.');
         }
     }
 
@@ -94,6 +97,7 @@ public class Player extends Entity {
     }
 
     public boolean giveItem (Item item) {
+        GamePanel.addMessage("You have " + item.toString(false) + ".");
         for (Item owned : items) {
             if (owned.getName().equals(item.getName())) {
                 int leftover = owned.addItems(item.getCount());
@@ -168,5 +172,15 @@ public class Player extends Entity {
 
     public void setRanged(Fireable ranged) {
         this.ranged = ranged;
+    }
+
+    @Override
+    public void eachTurn() {
+        super.eachTurn();
+        turnsToRegen--;
+        if (turnsToRegen == 0) {
+            setHealth(getHealth() + 1);
+            turnsToRegen = 200 / getMaxHealth();
+        }
     }
 }

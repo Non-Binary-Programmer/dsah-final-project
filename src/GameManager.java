@@ -43,13 +43,15 @@ public class GameManager implements KeyListener {
                if (Math.random() < 0.005 && map[row][col].getEntity().isEmpty() && map[row][col].getTerrain() != Terrain.WALL) {
                    map[row][col].setEntity(new GiantRat(this, row, col));
                }
+                if (Math.random() < 0.005 && map[row][col].getTerrain() != Terrain.WALL) {
+                    map[row][col].setItems(new Item[]{new PotionCureLight(1)});
+                } else if (Math.random() < 0.005 && map[row][col].getEntity().isEmpty() && map[row][col].getTerrain() != Terrain.WALL) {
+                    map[row][col].setItems(new Item[]{new Sword((int) (Math.random() * 10), (int) (Math.random() * 10))});
+                }
             }
         }
         updateSeen();
         placeStairs(tileAt(player.getRow(), player.getCol()));
-        player.giveItem(new PotionPoison(30, 2));
-        player.giveItem(new PotionCureLight(5));
-        player.giveItem(new Sword(10, 10));
         gamePanel.updateDisplay(map, HEIGHT / 2, WIDTH / 2);
         System.out.println(Arrays.deepToString(map));
     }
@@ -438,6 +440,19 @@ public class GameManager implements KeyListener {
                         GamePanel.addMessage("Your inventory:");
                         panel.displayInventory(player.getItems());
                         state = State.INVENTORY;
+                    }
+                    case 's' -> {
+                        GamePanel.addMessage("Health: " + player.getHealth() + "/" + player.getMaxHealth() + '.');
+                        GamePanel.addMessage("Level: " + player.getLevel());
+                        panel.updateDisplay(map, focusRow, focusCol);
+                    }
+                    case 'g' -> {
+                        Item[] toAdd = map[player.getRow()][player.getCol()].getItems();
+                        for (Item i : toAdd) {
+                            player.giveItem(i);
+                        }
+                        map[player.getRow()][player.getCol()].setItems(null);
+                        actionPerformed = true;
                     }
                     case '1' -> {
                         map[player.getRow() + 1][player.getCol() - 1].receiveEntity(player);

@@ -1,12 +1,13 @@
 package src;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class Tile {
-    private ItemBase[] items;
+    private Item[] items;
     private int money;
     private Entity entity;
     private Terrain terrain;
@@ -65,6 +66,11 @@ public class Tile {
     public char getVisual () {
         if (entity != null) {
             return entity.ICON;
+        }
+        if (items != null) {
+            if (items.length != 0) {
+                return Arrays.stream(this.items).sorted().findFirst().orElseThrow().getIcon();
+            }
         }
         switch (this.terrain) {
             case EMPTY -> {
@@ -171,5 +177,13 @@ public class Tile {
 
     public void setTerrain(Terrain terrain) {
         this.terrain = terrain;
+    }
+
+    public Item[] getItems() {
+        return items;
+    }
+
+    public void setItems(Item[] items) {
+        this.items = items;
     }
 }
